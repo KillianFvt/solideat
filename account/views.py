@@ -1,19 +1,22 @@
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 
 @api_view(['POST'])
-def login(request):
+def login_account(request):
     """
     This view logs in a user
     :param request: WSGI request object
     :return: Response object
     """
 
+    data = request.data
+    print(data)
+
     # get the username and password from the request data
-    username = request.data.get('username')
-    password = request.data.get('password')
+    username = data["username"]
+    password = data["password"]
 
     # check if the username and password are provided
     if not username or not password:
@@ -29,3 +32,18 @@ def login(request):
         return Response({'message': 'Login successful'})
     else:
         return Response({'message': 'Login failed'}, status=400)
+
+
+@api_view(['GET'])
+def get_current_user(request):
+    """
+    This view returns the current logged-in user
+    :param request: WSGI request object
+    :return: Response object
+    """
+
+    # check if the user is authenticated
+    if request.user.is_authenticated:
+        return Response({'username': request.user.username})
+    else:
+        return Response({'message': 'User is not authenticated'}, status=400)
