@@ -28,3 +28,7 @@ class RatingViewSet(viewsets.ModelViewSet):
     queryset = Rating.objects.all()
     serializer_class = RatingSerializer
 
+
+@api_view(['POST'])
+def make_reservation(request):
+    return Response({"message": "Make a reservation"})
