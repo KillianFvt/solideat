@@ -28,21 +28,48 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'localhost',
     'localhost:3000',
+    'localhost:8000',
     'http://localhost',
     'http://localhost:3000',
+    'http://localhost:3000/',
+    'http://localhost:8000',
+    'http://localhost:8000/',
+    '*'
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost',
     'http://localhost:3000',
+    'http://localhost:3000/',
+    'http://localhost:8000',
+    'http://localhost:8000/',
     'https://localhost',
     'https://localhost:3000',
+    'https://localhost:3000/',
+    'https://localhost:8000',
+    'https://localhost:8000/',
+    'https://*.127.0.0.1',
+    'https://*.127.0.0.1/',
+    'https://127.0.0.1/',
+    'http://127.0.0.1/',
 ]
 
-CSRF_COOKIE_NAME = "csrftoken"
-CSRF_HEADER_NAME = 'X-CSRFToken'
-CSRF_COOKIE_HTTPONLY = False
-CSRF_COOKIE_SECURE = False
+# CSRF_COOKIE_NAME = "csrftoken"
+# CSRF_HEADER_NAME = 'HTTP_X_CSRFTOKEN' #'X-CSRFToken'
+# CSRF_COOKIE_HTTPONLY = True
+# CSRF_COOKIE_SAMESITE = 'Lax'
+# SESSION_COOKIE_SAMESITE = 'Lax'
+# SESSION_COOKIE_HTTPONLY = True
+# CSRF_USE_SESSIONS = True
+
+# PROD ONLY
+# CSRF_COOKIE_SECURE = True
+# SESSION_COOKIE_SECURE = True
+
+# new stuff
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
 
 CORS_ALLOW_METHODS = [
     "DELETE",
@@ -55,15 +82,14 @@ CORS_ALLOW_METHODS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
-
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
     ],
 
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ],
 }
 
@@ -77,10 +103,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
-    "api.apps.ApiConfig"
+    "api.apps.ApiConfig",
+    "account.apps.AccountConfig"
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
