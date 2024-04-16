@@ -34,38 +34,6 @@ def login_account(request):
     return response
 
 
-class LoginView(APIView):
-    """
-    This view logs in a user
-    """
-
-    authentication_classes = [
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.TokenAuthentication',
-    ]
-
-    permission_classes = [
-        'rest_framework.permissions.AllowAny',
-    ]
-
-    @csrf_protect
-    def post(self, request):
-        data = request.data
-
-        # get the username and password from the request data
-        username = data["email"]
-        password = data["password"]
-
-        # check if the username and password are provided
-        if not username or not password:
-            return Response({'error': 'Username and password are required'}, status=400)
-
-        # log in the user
-        response = login_user(username, password, request)
-
-        return response
-
-
 @api_view(['GET'])
 def logout_account(request):
     """
@@ -81,7 +49,7 @@ def logout_account(request):
     else:
         return Response({"error": "No account to log out"})
 
-
+@csrf_exempt
 @api_view(['POST'])
 def register_account(request):
     """
