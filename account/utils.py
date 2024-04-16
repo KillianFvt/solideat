@@ -12,4 +12,4 @@ def login_user(username: str, password: str, request) -> Response:
         request.session.save()  # not necessary, but it's a good practice to save the session
         return Response({'message': 'Login successful'})
     else:
-        return Response({'message': 'Login failed'}, status=400)
+        return Response({'error': 'Login failed'}, status=400)
