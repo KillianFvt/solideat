@@ -49,6 +49,7 @@ def logout_account(request):
     else:
         return Response({"error": "No account to log out"})
 
+
 @csrf_exempt
 @api_view(['POST'])
 def register_account(request):
