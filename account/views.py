@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from account.utils import login_user
+from api.models import Restaurant
 
 
 @csrf_exempt
@@ -108,11 +109,21 @@ def get_current_user(request):
     :return: Response object
     """
 
+    current_user = request.user
+    ro_group = Group.objects.get(name='RestaurantOwners')
+    is_restaurant_owner = current_user.groups.contains(ro_group)
+    restaurant_id = None
+
+    if is_restaurant_owner:
+        restaurant_id = Restaurant.objects.filter(owner=current_user).first()
+
     # check if the user is authenticated
-    if request.user.is_authenticated:
+    if current_user.is_authenticated:
         return Response({
-            'username': request.user.username,
-            'id': request.user.id,
+            'username': current_user.username,
+            'id': current_user.id,
+            'is_restaurant_owner': is_restaurant_owner,
+            'restaurant': restaurant_id
         })
     else:
         return Response({'error': 'User is not authenticated'}, status=400)
