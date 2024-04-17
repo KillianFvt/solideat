@@ -110,6 +110,9 @@ def get_current_user(request):
 
     # check if the user is authenticated
     if request.user.is_authenticated:
-        return Response({'username': request.user.username})
+        return Response({
+            'username': request.user.username,
+            'id': request.user.id,
+        })
     else:
         return Response({'error': 'User is not authenticated'}, status=400)
