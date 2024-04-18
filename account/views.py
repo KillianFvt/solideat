@@ -3,7 +3,6 @@ from django.contrib.auth.models import User, Group
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from account.utils import login_user
 from api.models import Restaurant
@@ -71,6 +70,14 @@ def register_account(request):
     last_name = data["last_name"]
     is_restaurateur = data["is_restaurateur"]
 
+    print('is_restaurateur:',  is_restaurateur)
+
+    # avis
+    if is_restaurateur == "true":
+        is_restaurateur = True
+    else:
+        is_restaurateur = False
+
     # check if the username and password are provided
     if not username or not password:
         return Response({'error': 'Username and password are required'}, status=400)
@@ -92,6 +99,10 @@ def register_account(request):
         group = Group.objects.get(name='RestaurantOwners')
         group.user_set.add(user)
         group.save()
+
+    #TODO enlever
+    group = Group.objects.get(name='RestaurantOwners')
+    print(group.user_set.all())
 
     user.save()
 
