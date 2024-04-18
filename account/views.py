@@ -70,14 +70,6 @@ def register_account(request):
     last_name = data["last_name"]
     is_restaurateur = data["is_restaurateur"]
 
-    print('is_restaurateur:',  is_restaurateur)
-
-    # avis
-    if is_restaurateur == "true":
-        is_restaurateur = True
-    else:
-        is_restaurateur = False
-
     # check if the username and password are provided
     if not username or not password:
         return Response({'error': 'Username and password are required'}, status=400)
@@ -100,10 +92,6 @@ def register_account(request):
         group.user_set.add(user)
         group.save()
 
-    #TODO enlever
-    group = Group.objects.get(name='RestaurantOwners')
-    print(group.user_set.all())
-
     user.save()
 
     # log in the user
@@ -123,10 +111,12 @@ def get_current_user(request):
     current_user = request.user
     ro_group = Group.objects.get(name='RestaurantOwners')
     is_restaurant_owner = current_user.groups.contains(ro_group)
-    restaurant_id = None
 
     if is_restaurant_owner:
-        restaurant_id = Restaurant.objects.filter(owner=current_user).first()
+        restaurant = Restaurant.objects.filter(owner=current_user).first()
+        restaurant_id = restaurant.id
+    else :
+        restaurant_id = None
 
     # check if the user is authenticated
     if current_user.is_authenticated:
@@ -134,7 +124,7 @@ def get_current_user(request):
             'username': current_user.username,
             'id': current_user.id,
             'is_restaurant_owner': is_restaurant_owner,
-            'restaurant': restaurant_id
+            'restaurant_id': restaurant_id
         })
     else:
         return Response({'error': 'User is not authenticated'}, status=400)
