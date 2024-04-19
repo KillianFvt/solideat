@@ -114,8 +114,11 @@ def get_current_user(request):
 
     if is_restaurant_owner:
         restaurant = Restaurant.objects.filter(owner=current_user).first()
-        restaurant_id = restaurant.id
-    else :
+        if restaurant:
+            restaurant_id = restaurant.id
+        else:
+            restaurant_id = None
+    else:
         restaurant_id = None
 
     # check if the user is authenticated
