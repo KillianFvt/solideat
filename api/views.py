@@ -1,3 +1,4 @@
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import viewsets
@@ -29,6 +30,7 @@ class RatingViewSet(viewsets.ModelViewSet):
     serializer_class = RatingSerializer
 
 
+@csrf_exempt
 @api_view(['POST'])
 def make_reservation(request):
     data = request.data
