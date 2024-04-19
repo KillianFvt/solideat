@@ -57,3 +57,14 @@ def make_reservation(request):
         return Response({"error": "No more available meals"}, status=400)
 
     return Response({"message": "Make a reservation"}, status=201)
+
+
+@csrf_exempt
+@api_view(['GET'])
+def get_user_reservations(request):
+    user = request.user
+    reservations = Reservation.objects.filter(user=user)
+
+    return Response({
+        "reservations": ReservationSerializer(reservations, many=True).data
+    })
