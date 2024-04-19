@@ -63,6 +63,10 @@ def make_reservation(request):
 @api_view(['GET'])
 def get_user_reservations(request):
     user = request.user
+
+    if user.is_anonymous:
+        return Response({"error": "User is not authenticated"}, status=400)
+
     reservations = Reservation.objects.filter(user=user)
 
     return Response({
