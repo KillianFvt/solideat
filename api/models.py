@@ -15,6 +15,7 @@ class Restaurant(models.Model):
     schedule = models.CharField(max_length=100, blank=True, null=True)
 
     available_meals = models.IntegerField(blank=False, null=False, default=0)
+    available_meals_max = models.IntegerField(blank=False, null=False, default=0)
 
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
 
