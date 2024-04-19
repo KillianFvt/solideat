@@ -12,4 +12,5 @@ router.register('ratings', RatingViewSet)
 urlpatterns = [
     path('', views.index, name='api-root'),
     path('', include(router.urls)),
+    path('reservation/new/', views.make_reservation, name='make-reservation')
 ]
