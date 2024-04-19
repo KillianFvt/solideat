@@ -72,3 +72,22 @@ def get_user_reservations(request):
     return Response({
         "reservations": ReservationSerializer(reservations, many=True).data
     })
+
+
+@csrf_exempt
+@api_view(['GET'])
+def get_restaurant_reservations(request):
+    user = request.user
+
+    if user.is_anonymous:
+        return Response({"error": "User is not authenticated"}, status=400)
+
+    if user.groups.filter(name='RestaurantOwners').exists():
+        reservations = Reservation.objects.filter(restaurant__owner=user)
+
+        return Response({
+            "reservations": ReservationSerializer(reservations, many=True).data
+        })
+
+    else:
+        return Response({"error": "User is not a restaurant owner"}, status=400)
