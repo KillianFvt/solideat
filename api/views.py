@@ -29,6 +29,17 @@ class RatingViewSet(viewsets.ModelViewSet):
     queryset = Rating.objects.all()
     serializer_class = RatingSerializer
 
+    def get_queryset(self):
+        restaurant_id = self.request.query_params.get('restaurant_id')
+        user_id = self.request.query_params.get('user_id')
+
+        if restaurant_id:
+            return Rating.objects.filter(restaurant=restaurant_id)
+        elif user_id:
+            return Rating.objects.filter(user=user_id)
+        else:
+            return Rating.objects.all()
+
 
 @csrf_exempt
 @api_view(['POST'])
