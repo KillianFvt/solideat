@@ -14,6 +14,19 @@ class RestaurantViewSet(viewsets.ModelViewSet):
     queryset = Restaurant.objects.all()
     serializer_class = RestaurantSerializer
 
+    def get_queryset(self):
+        lat = self.request.query_params.get('lat')
+        lng = self.request.query_params.get('lng')
+
+        if lat and lng:
+            return Restaurant.objects.filter(
+                lat__range=(float(lat) - 0.1, float(lat) + 0.1),
+                lng__range=(float(lng) - 0.1, float(lng) + 0.1)
+            )
+            return
+        else:
+            return Rating.objects.all()
+
 
 class RestaurantImageViewSet(viewsets.ModelViewSet):
     queryset = RestaurantImage.objects.all()
