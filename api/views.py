@@ -1,7 +1,11 @@
+from datetime import datetime
+
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import viewsets
+
+from .reservation_check import reservation_checker
 from .serializers import *
 
 
@@ -36,8 +40,20 @@ def make_reservation(request):
     data = request.data
     user = request.user
 
+    if request.user.is_anonymous:
+        return Response({"error": "User is not authenticated"}, status=400)
+
     date = data.get('date')
     time = data.get('time')
+    str_datetime = f"{date} {time}"
+    if len(str(time)) == 5:
+        str_datetime = f"{date} {time}:00"
+
+    reservation_datetime = datetime.strptime(str_datetime, '%Y-%m-%d %H:%M:%S')
+
+    if not reservation_checker(user.id, reservation_datetime):
+        return Response({"error": "Reservation not allowed"}, status=403)
+
     restaurant_id = data.get('restaurant_id')
 
     restaurant = Restaurant.objects.get(id=restaurant_id)
