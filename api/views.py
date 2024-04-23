@@ -37,6 +37,14 @@ class RatingViewSet(viewsets.ModelViewSet):
 @csrf_exempt
 @api_view(['POST'])
 def make_reservation(request):
+    """
+    This view makes a reservation
+    It has several checks to ensure that a user can make a reservation
+    User has to be authenticated
+
+    :param request: WSGI request object
+    :return: Response object
+    """
     data = request.data
     user = request.user
 
@@ -78,6 +86,12 @@ def make_reservation(request):
 @csrf_exempt
 @api_view(['GET'])
 def get_user_reservations(request):
+    """
+    This view gets all reservations for the current user
+
+    :param request: WSGI request object
+    :return: Response object
+    """
     user = request.user
 
     if user.is_anonymous:
@@ -93,6 +107,11 @@ def get_user_reservations(request):
 @csrf_exempt
 @api_view(['GET'])
 def get_restaurant_reservations(request):
+    """
+    This view gets all reservations for the current restaurant owner
+    :param request: WSGI request object
+    :return: Response object
+    """
     user = request.user
 
     if user.is_anonymous:
