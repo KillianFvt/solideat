@@ -39,6 +39,12 @@ class RestaurantImageViewSet(viewsets.ModelViewSet):
 
         return Response({"message": "Image uploaded"}, status=201)
 
+    def get_queryset(self):
+        restaurant_id = self.request.query_params.get('restaurant_id')
+        if restaurant_id:
+            return RestaurantImage.objects.filter(restaurant=restaurant_id)
+        return RestaurantImage.objects.all()
+
 
 class ReservationViewSet(viewsets.ModelViewSet):
     queryset = Reservation.objects.all()
