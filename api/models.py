@@ -15,6 +15,7 @@ class Restaurant(models.Model):
     schedule = models.CharField(max_length=100, blank=True, null=True)
 
     available_meals = models.IntegerField(blank=False, null=False, default=0)
+    available_meals_max = models.IntegerField(blank=False, null=False, default=0)
 
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
 
@@ -35,6 +36,7 @@ class Reservation(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateField()
     time = models.TimeField()
+    is_taken = models.BooleanField(default=False, null=False, blank=False)
 
 
 class Rating(models.Model):
