@@ -33,6 +33,17 @@ class RatingViewSet(viewsets.ModelViewSet):
     queryset = Rating.objects.all()
     serializer_class = RatingSerializer
 
+    def get_queryset(self):
+        restaurant_id = self.request.query_params.get('restaurant_id')
+        user_id = self.request.query_params.get('user_id')
+
+        if restaurant_id:
+            return Rating.objects.filter(restaurant=restaurant_id)
+        elif user_id:
+            return Rating.objects.filter(user=user_id)
+        else:
+            return Rating.objects.all()
+
 
 @csrf_exempt
 @api_view(['POST'])
@@ -126,3 +137,40 @@ def get_restaurant_reservations(request):
 
     else:
         return Response({"error": "User is not a restaurant owner"}, status=400)
+
+
+@csrf_exempt
+@api_view(['POST'])
+def make_review(request):
+    data = request.data
+    user = request.user
+
+    rating = data.get('rating')
+    comment = data.get('comment')
+    restaurant_id = data.get('restaurant_id')
+
+    restaurant = Restaurant.objects.get(id=restaurant_id)
+
+    # Check if user has already rated the restaurant
+    existing_rating = Rating.objects.filter(restaurant=restaurant, user=user)
+    if existing_rating:
+        return Response({"error": "User has already rated the restaurant"}, status=400)
+    else:
+        pass
+
+    # Check if user has made a reservation in the restaurant
+    reservation = Reservation.objects.get(restaurant=restaurant, user=user)
+    if not reservation:
+        return Response({"error": "User has not made a reservation in the restaurant"}, status=400)
+
+    # TODO: Check if the reservation is in the past
+
+    new_rating = Rating.objects.create(
+        restaurant=restaurant,
+        user=user,
+        rating=rating,
+        comment=comment
+    )
+    new_rating.save()
+
+    return Response({"message": "Make a reservation"}, status=201)

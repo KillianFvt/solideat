@@ -1,11 +1,18 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User, Group
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
+from rest_framework import viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from .serializer import *
 
 from account.utils import login_user
 from api.models import Restaurant
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
 
 @csrf_exempt
@@ -127,6 +134,8 @@ def get_current_user(request):
             'username': current_user.username,
             'id': current_user.id,
             'is_restaurant_owner': is_restaurant_owner,
+            'first_name': current_user.first_name,
+            'last_name': current_user.last_name,
             'restaurant_id': restaurant_id
         })
     else:
