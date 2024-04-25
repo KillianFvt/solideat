@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import viewsets
@@ -20,8 +21,33 @@ class RestaurantViewSet(viewsets.ModelViewSet):
 
 
 class RestaurantImageViewSet(viewsets.ModelViewSet):
+    parser_classes = [MultiPartParser, JSONParser]
     queryset = RestaurantImage.objects.all()
     serializer_class = RestaurantImageSerializer
+
+    def create(self, request, *args, **kwargs):
+        data = request.POST
+        file_data = request.FILES
+
+        print(data)
+        print(file_data)
+
+        restaurant_id = data.get('restaurant')
+        restaurant = Restaurant.objects.get(id=int(restaurant_id))
+
+        new_image = RestaurantImage.objects.create(
+            restaurant=restaurant,
+            image=file_data.get('image')
+        )
+        new_image.save()
+
+        return Response({"message": "Image uploaded"}, status=201)
+
+    def get_queryset(self):
+        restaurant_id = self.request.query_params.get('restaurant_id')
+        if restaurant_id:
+            return RestaurantImage.objects.filter(restaurant=restaurant_id)
+        return RestaurantImage.objects.all()
 
 
 class ReservationViewSet(viewsets.ModelViewSet):
