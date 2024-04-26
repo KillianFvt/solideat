@@ -155,7 +155,7 @@ def get_restaurant_reservations(request):
         return Response({"error": "User is not authenticated"}, status=400)
 
     if user.groups.filter(name='RestaurantOwners').exists():
-        reservations = Reservation.objects.filter(restaurant__owner=user)
+        reservations = Reservation.objects.filter(restaurant__owner=user).order_by('is_taken', 'date', 'time')
 
         return Response({
             "reservations": ReservationSerializer(reservations, many=True).data

@@ -24,11 +24,22 @@ def reservation_checker(user_id, reservation_datetime):
     if reservations.count() > 1:
         return False
 
+    min_time = (reservation_datetime - timezone.timedelta(hours=4)).time()
+    if reservation_datetime.time().hour <= 4:
+        min_time = timezone.datetime.strptime('00:00:00', '%H:%M:%S').time()
+
+    max_time = (reservation_datetime + timezone.timedelta(hours=4)).time()
+    if reservation_datetime.time().hour >= 20:
+        max_time = timezone.datetime.strptime('23:59:59', '%H:%M:%S').time()
+
     # Check if there is a reservation within 4 hours of the current time
-    reservations = reservations.filter(time__range=(
-        (reservation_datetime - timezone.timedelta(hours=4)).time(),
-        (reservation_datetime + timezone.timedelta(hours=4)).time(),
-    ))
+    reservations = reservations.filter(time__range=(min_time, max_time))
+
+    print(min_time)
+    print(max_time)
+
+    print(reservations.count())
+    print(reservations)
 
     if reservations.count() > 0:
         return False
