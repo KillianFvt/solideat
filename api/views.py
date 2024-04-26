@@ -54,6 +54,14 @@ class ReservationViewSet(viewsets.ModelViewSet):
     queryset = Reservation.objects.all()
     serializer_class = ReservationSerializer
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        restaurant = instance.restaurant
+        restaurant.available_meals += 1
+        restaurant.save()
+        self.perform_destroy(instance)
+        return Response(status=204)
+
 
 class RatingViewSet(viewsets.ModelViewSet):
     queryset = Rating.objects.all()
