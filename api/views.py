@@ -19,6 +19,9 @@ class RestaurantViewSet(viewsets.ModelViewSet):
     queryset = Restaurant.objects.all()
     serializer_class = RestaurantSerializer
 
+    def create(self, request, *args, **kwargs):
+        make_reservation(request)
+
 
 class RestaurantImageViewSet(viewsets.ModelViewSet):
     parser_classes = [MultiPartParser, JSONParser]
@@ -104,8 +107,10 @@ def make_reservation(request):
 
     reservation_datetime = datetime.strptime(str_datetime, '%Y-%m-%d %H:%M:%S')
 
-    if not reservation_checker(user.id, reservation_datetime):
-        return Response({"error": "Reservation not allowed"}, status=403)
+    res_check = reservation_checker(user.id, reservation_datetime)
+
+    if not res_check[0]:
+        return Response({"error": f"Reservation not allowed : {res_check[1]}"}, status=403)
 
     restaurant_id = data.get('restaurant_id')
 

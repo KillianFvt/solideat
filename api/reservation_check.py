@@ -14,6 +14,9 @@ def reservation_checker(user_id, reservation_datetime):
     :param reservation_datetime:
     :return:
     """
+    # check if reservation is for a past date
+    if reservation_datetime.date() < timezone.now().date():
+        return [False, 'Reservation is for a past date']
 
     # Get all reservations for the user on the same day
     user = User.objects.get(id=user_id)
@@ -22,7 +25,7 @@ def reservation_checker(user_id, reservation_datetime):
 
     # Check if the user has already made 2 reservations for the same day
     if reservations.count() > 1:
-        return False
+        return [False, 'User has already made 2 reservations for the same day']
 
     min_time = (reservation_datetime - timezone.timedelta(hours=4)).time()
     if reservation_datetime.time().hour <= 4:
@@ -42,6 +45,6 @@ def reservation_checker(user_id, reservation_datetime):
     print(reservations)
 
     if reservations.count() > 0:
-        return False
+        return [False, 'User has already made a reservation within 4 hours of the current time']
     else:
-        return True
+        return [True, 'User can make a reservation']

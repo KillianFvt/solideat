@@ -1,3 +1,4 @@
+from random import randint
 import factory
 from api.models import *
 from django.contrib.auth.models import User
@@ -15,11 +16,13 @@ class RestaurantFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Restaurant
 
+    id = factory.Sequence(lambda n: n + 1)
     name = factory.Sequence(lambda n: f"Restaurant{n}")
     address = factory.Faker('address')
     postal_code = factory.Faker('postcode')
     city = factory.Faker('city')
     owner = factory.SubFactory(UserFactory)
+    available_meals = factory.LazyAttribute(lambda _: randint(1, 100))
 
 
 class ReservationFactory(factory.django.DjangoModelFactory):
