@@ -1,5 +1,4 @@
 from datetime import datetime
-from time import sleep
 
 import pytest
 from rest_framework.test import APIClient
@@ -81,18 +80,55 @@ def test_reservationViewSet_create_reservation_without_required_fields(api_clien
 def test_make_reservation_in_4hours(api_client, test_user, test_restaurant):
     api_client.force_authenticate(user=test_user)
 
-    response = api_client.post('/api/reservations/', {
+    response1 = api_client.post('/api/reservations/', {
         'date': str(datetime.now().date()),
         'time': '12:00:00',
         'restaurant': test_restaurant.id,
         'user': test_user.id
     })
-    assert response.status_code == 201
+    assert response1.status_code == 201
 
-    response = api_client.post('/api/reservations/', {
+    # display all reservations
+    responseBDD1 = api_client.get('/api/reservations/')
+    print(responseBDD1.data)
+
+    response2 = api_client.post('/api/reservations/', {
         'date': str(datetime.now().date()),
-        'time': '13:00:00',
+        'time': '12:00:00',
         'restaurant': test_restaurant.id,
         'user': test_user.id
     })
-    assert response.status_code == 403
+
+    responseBDD2 = api_client.get('/api/reservations/')
+    print(responseBDD2.data)
+
+    assert response2.status_code == 403
+
+
+@pytest.mark.django_db
+def test_make_reservation_more_than_2(api_client, test_user, test_restaurant):
+    api_client.force_authenticate(user=test_user)
+
+    response1 = api_client.post('/api/reservations/', {
+        'date': str(datetime.now().date()),
+        'time': '12:00:00',
+        'restaurant': test_restaurant.id,
+        'user': test_user.id
+    })
+    assert response1.status_code == 201
+
+    response2 = api_client.post('/api/reservations/', {
+        'date': str(datetime.now().date()),
+        'time': '12:00:00',
+        'restaurant': test_restaurant.id,
+        'user': test_user.id
+    })
+    assert response2.status_code == 201
+
+    response3 = api_client.post('/api/reservations/', {
+        'date': str(datetime.now().date()),
+        'time': '12:00:00',
+        'restaurant': test_restaurant.id,
+        'user': test_user.id
+    })
+    assert response3.status_code == 403

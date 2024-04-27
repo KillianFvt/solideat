@@ -42,3 +42,22 @@ def test_ratingViewSet_get_single_rating(api_client, test_rating):
 def test_ratingViewSet_get_nonexistent_rating(api_client):
     response = api_client.get('/api/ratings/55545646/')
     assert response.status_code == 404
+
+
+@pytest.mark.django_db
+def test_make_rating_more_than_one_per_restaurant(api_client, test_user, test_restaurant):
+    api_client.force_authenticate(user=test_user)
+    response = api_client.post('/api/ratings/', {
+        'rating': 5,
+        'comment': 'Test comment',
+        'restaurant': test_restaurant.id,
+        'user': test_user.id
+    })
+    assert response.status_code == 201
+    response = api_client.post('/api/ratings/', {
+        'rating': 4,
+        'comment': 'Test comment',
+        'restaurant': test_restaurant.id,
+        'user': test_user.id
+    })
+    assert response.status_code == 400

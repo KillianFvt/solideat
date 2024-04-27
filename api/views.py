@@ -81,6 +81,9 @@ class RatingViewSet(viewsets.ModelViewSet):
         else:
             return Rating.objects.all()
 
+    def create(self, request, *args, **kwargs):
+        make_review(request)
+
 
 @csrf_exempt
 @api_view(['POST'])
