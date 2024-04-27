@@ -31,3 +31,13 @@ class ReservationFactory(factory.django.DjangoModelFactory):
     is_taken = factory.Faker('boolean')
     restaurant = factory.SubFactory(RestaurantFactory)
     user = factory.SubFactory(UserFactory)
+
+
+class RatingFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Rating
+
+    rating = factory.Iterator([1, 2, 3, 4, 5])
+    comment = factory.Faker('sentence')
+    restaurant = factory.SubFactory(RestaurantFactory)
+    user = factory.SubFactory(UserFactory)

@@ -37,3 +37,39 @@ def test_restaurantViewSet_get_single_restaurant(api_client, test_restaurant):
 def test_restaurantViewSet_get_nonexistent_restaurant(api_client):
     response = api_client.get('/api/restaurants/999/')
     assert response.status_code == 404
+
+
+@pytest.mark.django_db
+def test_restaurantViewSet_create_restaurant(api_client, test_user):
+    api_client.force_authenticate(user=test_user)
+    response = api_client.post('/api/restaurants/', {
+        'name': 'Test Restaurant',
+        'address': '123 Test St',
+        'postal_code': '12345',
+        'city': 'Test City',
+        'owner': test_user.id
+    })
+    assert response.status_code == 201
+    assert response.data['name'] == 'Test Restaurant'
+    assert response.data['address'] == '123 Test St'
+    assert response.data['postal_code'] == '12345'
+    assert response.data['city'] == 'Test City'
+    assert response.data['owner'] == test_user.id
+
+
+@pytest.mark.django_db
+def test_restaurantViewSet_create_restaurant_without_required_fields(api_client, test_user):
+    api_client.force_authenticate(user=test_user)
+    response = api_client.post('/api/restaurants/', {
+        'name': 'Test Restaurant',
+    })
+    assert response.status_code == 400
+
+
+@pytest.mark.django_db
+def test_restaurantViewSet_create_restaurant_without_required_fields(api_client, test_user):
+    api_client.force_authenticate(user=test_user)
+    response = api_client.post('/api/restaurants/', {
+        'name': 'Test Restaurant',
+    })
+    assert response.status_code == 400
