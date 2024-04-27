@@ -180,14 +180,17 @@ def make_review(request):
     # Check if user has already rated the restaurant
     existing_rating = Rating.objects.filter(restaurant=restaurant, user=user)
     if existing_rating:
-        return Response({"error": "User has already rated the restaurant"}, status=400)
+        return Response({"error": "Vous avez déjà évalué ce restaurant."}, status=400)
     else:
         pass
 
     # Check if user has made a reservation in the restaurant
-    reservation = Reservation.objects.get(restaurant=restaurant, user=user)
+    try:
+        reservation = Reservation.objects.get(restaurant=restaurant, user=user)
+    except Reservation.DoesNotExist:
+        reservation = None
     if not reservation:
-        return Response({"error": "User has not made a reservation in the restaurant"}, status=400)
+        return Response({"error": "Vous n'avez jamais créé de réservation pour ce restaurant."}, status=400)
 
     # TODO: Check if the reservation is in the past
 
