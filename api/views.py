@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.db.models import Avg
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.response import Response
@@ -219,3 +220,12 @@ def make_review(request):
     new_rating.save()
 
     return Response({"message": "Make a reservation"}, status=201)
+
+
+@csrf_exempt
+@api_view(['GET'])
+def get_restaurant_rating_avg(request, restaurant_id):
+    restaurant = Restaurant.objects.get(id=restaurant_id)
+    ratings = Rating.objects.filter(restaurant=restaurant)
+    avg_rating = ratings.aggregate(Avg('rating'))['rating__avg']
+    return Response({"avg_rating": avg_rating}, status=200)
