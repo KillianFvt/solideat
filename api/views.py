@@ -20,9 +20,6 @@ class RestaurantViewSet(viewsets.ModelViewSet):
     queryset = Restaurant.objects.all()
     serializer_class = RestaurantSerializer
 
-    def create(self, request, *args, **kwargs):
-        make_reservation(request)
-
 
 class RestaurantImageViewSet(viewsets.ModelViewSet):
     parser_classes = [MultiPartParser, JSONParser]
