@@ -3,3 +3,6 @@
 *.pyc
 *.pyo
 db.sqlite3
+restaurant_images
+restaurant_images/*
+./restaurant_images

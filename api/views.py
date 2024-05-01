@@ -1,7 +1,13 @@
+from datetime import datetime
+
+from django.db.models import Avg
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import viewsets
+
+from .reservation_check import reservation_checker
 from .serializers import *
 
 
@@ -29,28 +35,97 @@ class RestaurantViewSet(viewsets.ModelViewSet):
 
 
 class RestaurantImageViewSet(viewsets.ModelViewSet):
+    parser_classes = [MultiPartParser, JSONParser]
     queryset = RestaurantImage.objects.all()
     serializer_class = RestaurantImageSerializer
+
+    def create(self, request, *args, **kwargs):
+        data = request.POST
+        file_data = request.FILES
+
+        print(data)
+        print(file_data)
+
+        restaurant_id = data.get('restaurant')
+        restaurant = Restaurant.objects.get(id=int(restaurant_id))
+
+        new_image = RestaurantImage.objects.create(
+            restaurant=restaurant,
+            image=file_data.get('image')
+        )
+        new_image.save()
+
+        return Response({"message": "Image uploaded"}, status=201)
+
+    def get_queryset(self):
+        restaurant_id = self.request.query_params.get('restaurant_id')
+        if restaurant_id:
+            return RestaurantImage.objects.filter(restaurant=restaurant_id)
+        return RestaurantImage.objects.all()
 
 
 class ReservationViewSet(viewsets.ModelViewSet):
     queryset = Reservation.objects.all()
     serializer_class = ReservationSerializer
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        restaurant = instance.restaurant
+        restaurant.available_meals += 1
+        restaurant.save()
+        self.perform_destroy(instance)
+        return Response(status=204)
+
 
 class RatingViewSet(viewsets.ModelViewSet):
     queryset = Rating.objects.all()
     serializer_class = RatingSerializer
 
+    def get_queryset(self):
+        restaurant_id = self.request.query_params.get('restaurant_id')
+        user_id = self.request.query_params.get('user_id')
+
+        if restaurant_id:
+            return Rating.objects.filter(restaurant=restaurant_id)
+        elif user_id:
+            return Rating.objects.filter(user=user_id)
+        else:
+            return Rating.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        make_review(request)
+
 
 @csrf_exempt
 @api_view(['POST'])
 def make_reservation(request):
+    """
+    This view makes a reservation
+    It has several checks to ensure that a user can make a reservation
+    User has to be authenticated
+
+    :param request: WSGI request object
+    :return: Response object
+    """
     data = request.data
     user = request.user
 
+    if request.user.is_anonymous:
+        return Response({"error": "User is not authenticated"}, status=400)
+
     date = data.get('date')
     time = data.get('time')
+    str_datetime = f"{date} {time}"
+    if len(str(time)) == 5:
+        str_datetime = f"{date} {time}:00"
+
+    reservation_datetime = datetime.strptime(str_datetime, '%Y-%m-%d %H:%M:%S')
+
+    res_check = reservation_checker(user.id, reservation_datetime)
+
+    if not res_check[0]:
+        return Response({"error": f"Reservation not allowed : {res_check[1]}"}, status=403)
+
     restaurant_id = data.get('restaurant_id')
 
     restaurant = Restaurant.objects.get(id=restaurant_id)
@@ -75,6 +150,12 @@ def make_reservation(request):
 @csrf_exempt
 @api_view(['GET'])
 def get_user_reservations(request):
+    """
+    This view gets all reservations for the current user
+
+    :param request: WSGI request object
+    :return: Response object
+    """
     user = request.user
 
     if user.is_anonymous:
@@ -90,13 +171,18 @@ def get_user_reservations(request):
 @csrf_exempt
 @api_view(['GET'])
 def get_restaurant_reservations(request):
+    """
+    This view gets all reservations for the current restaurant owner
+    :param request: WSGI request object
+    :return: Response object
+    """
     user = request.user
 
     if user.is_anonymous:
         return Response({"error": "User is not authenticated"}, status=400)
 
     if user.groups.filter(name='RestaurantOwners').exists():
-        reservations = Reservation.objects.filter(restaurant__owner=user)
+        reservations = Reservation.objects.filter(restaurant__owner=user).order_by('is_taken', 'date', 'time')
 
         return Response({
             "reservations": ReservationSerializer(reservations, many=True).data
@@ -104,3 +190,52 @@ def get_restaurant_reservations(request):
 
     else:
         return Response({"error": "User is not a restaurant owner"}, status=400)
+
+
+@csrf_exempt
+@api_view(['POST'])
+def make_review(request):
+    data = request.data
+    user = request.user
+
+    rating = data.get('rating')
+    comment = data.get('comment')
+    restaurant_id = data.get('restaurant_id')
+
+    restaurant = Restaurant.objects.get(id=restaurant_id)
+
+    # Check if user has already rated the restaurant
+    existing_rating = Rating.objects.filter(restaurant=restaurant, user=user)
+    if existing_rating:
+        return Response({"error": "Vous avez déjà évalué ce restaurant."}, status=400)
+    else:
+        pass
+
+    # Check if user has made a reservation in the restaurant
+    try:
+        reservation = Reservation.objects.get(restaurant=restaurant, user=user)
+    except Reservation.DoesNotExist:
+        reservation = None
+    if not reservation:
+        return Response({"error": "Vous n'avez jamais créé de réservation pour ce restaurant."}, status=400)
+
+    # TODO: Check if the reservation is in the past
+
+    new_rating = Rating.objects.create(
+        restaurant=restaurant,
+        user=user,
+        rating=rating,
+        comment=comment
+    )
+    new_rating.save()
+
+    return Response({"message": "Make a reservation"}, status=201)
+
+
+@csrf_exempt
+@api_view(['GET'])
+def get_restaurant_rating_avg(request, restaurant_id):
+    restaurant = Restaurant.objects.get(id=restaurant_id)
+    ratings = Rating.objects.filter(restaurant=restaurant)
+    avg_rating = ratings.aggregate(Avg('rating'))['rating__avg']
+    return Response({"avg_rating": avg_rating}, status=200)
